@@ -18,13 +18,20 @@ def create_reservation_route():
         }
 
         # Parse ISO timestamp into a datetime object
-        time_slot = parse_time_slot(data['time_slot'])
+        time_slot = parse_time_slot(data['time_slot'], to_utc=False)
 
-        result = create_reservation(customer_data, time_slot)
+        guest_count = data['guest_count']
+        result = create_reservation(customer_data, time_slot, guest_count)
         return jsonify(result), 201 if result['success'] else 400
 
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
+        return jsonify({
+            'success': False,
+            'message': 'An unexpected error occurred.',
+            'errors': {
+                'exception': f'{type(e).__name__}: {str(e)}'
+            }
+        }), 500
 
 @reservation_bp.route('', methods=['GET'])
 def get_reservations_route():
@@ -42,4 +49,10 @@ def get_reservations_route():
         return jsonify(result), 200
 
     except Exception as e:
-        return jsonify({'success': False, 'message': str(e)}), 500
+        return jsonify({
+            'success': False,
+            'message': 'An unexpected error occurred.',
+            'errors': {
+                'exception': f'{type(e).__name__}: {str(e)}'
+            }
+        }), 500
